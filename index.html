@@ -190,7 +190,7 @@ function makeStagger() {
 
 // === Brush Scatter ===
 function makeBrushScatter() {
-  d3.csv("C:\Users\yusel\Documents\GitHub\Primer-Informe-D3\data").then(data => {
+  d3.csv("data/dense.csv").then(data => {
     data.forEach(d => { d.A = +d.A; d.B = +d.B; });
 
     const svg1 = d3.select("#brush1"),
