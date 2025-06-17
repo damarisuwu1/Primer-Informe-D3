@@ -68,6 +68,12 @@
         height: auto;
         max-height: 320px;
     }
+    .dual-svg {
+        display:flex;
+        justify-content:center;
+        gap:20px;
+        flex-wrap:wrap;
+    }
 </style>
 </head>
 <body>
@@ -93,8 +99,16 @@
             <div class="chart-title">📊 Barras Stagger</div>
             <svg id="stagger" viewBox="0 0 600 300"></svg>
         </div>
+        <div class="chart-container">
+            <div class="chart-title">🔍 Brush Scatter</div>
+            <div class="dual-svg">
+                <svg id="brush1" width="300" height="300"></svg>
+                <svg id="brush2" width="300" height="300"></svg>
+            </div>
+        </div>
     </div>
 </div>
+
 <script>
 // === Drag & Drop ===
 function makeDragDrop() {
@@ -174,12 +188,63 @@ function makeStagger() {
   });
 }
 
+// === Brush Scatter ===
+function makeBrushScatter() {
+  d3.csv("C:\Users\yusel\Documents\GitHub\Primer-Informe-D3\data").then(data => {
+    data.forEach(d => { d.A = +d.A; d.B = +d.B; });
+
+    const svg1 = d3.select("#brush1"),
+          svg2 = d3.select("#brush2");
+
+    const sc1 = d3.scaleLinear().domain([0, 10, 50]).range(["lime", "yellow", "red"]);
+    const sc2 = d3.scaleLinear().domain([0, 10, 50]).range(["lime", "yellow", "blue"]);
+
+    const cs1 = drawCircles(svg1, data, d => d.A, d => d.B, sc1);
+    const cs2 = drawCircles(svg2, data, d => d.A, d => d.B, sc2);
+
+    installHandlers(svg1, data, cs1, cs2, sc1, sc2);
+  });
+
+  function drawCircles(svg, data, accX, accY, sc) {
+    const color = sc(Infinity);
+    return svg.selectAll("circle")
+      .data(data)
+      .enter()
+      .append("circle")
+      .attr("r", 5)
+      .attr("cx", accX)
+      .attr("cy", accY)
+      .attr("fill", color)
+      .attr("fill-opacity", 0.4);
+  }
+
+  function installHandlers(svg, data, cs1, cs2, sc1, sc2) {
+    svg.attr("cursor", "crosshair")
+      .on("mousemove", function () {
+        const pt = d3.mouse(this);
+        cs1.attr("fill", function (d, i) {
+          const dx = pt[0] - +d3.select(this).attr("cx");
+          const dy = pt[1] - +d3.select(this).attr("cy");
+          const r = Math.hypot(dx, dy);
+          data[i].r = r;
+          return sc1(r);
+        });
+        cs2.attr("fill", (d, i) => sc2(data[i].r));
+      })
+      .on("mouseleave", function () {
+        cs1.attr("fill", sc1(Infinity));
+        cs2.attr("fill", sc2(Infinity));
+      });
+  }
+}
+
 // === Lanzar funciones al cargar ===
 document.addEventListener("DOMContentLoaded", function() {
   makeDragDrop();
   makeLissajous();
   coordsPixels("#coords");
   makeStagger();
+  makeBrushScatter();
 });
 </script>
 </body>
