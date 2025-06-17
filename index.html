@@ -32,30 +32,9 @@
         -webkit-text-fill-color:transparent;
         background-clip:text;
     }
-    .stats-grid {
-        display:grid;
-        grid-template-columns:repeat(auto-fit, minmax(200px, 1fr));
-        gap:20px;
-        margin-bottom:40px;
-    }
-    .stat-card {
-        background:linear-gradient(135deg,#667eea,#764ba2);
-        color:#fff;
-        padding:25px;
-        border-radius:15px;
-        text-align:center;
-        transition:.3s;
-        box-shadow:0 10px 20px rgba(0,0,0,.1);
-    }
-    .stat-card:hover {
-        transform:translateY(-5px);
-        box-shadow:0 15px 30px rgba(0,0,0,.15);
-    }
-    .stat-value {font-size:2.5em; font-weight:bold; margin-bottom:5px;}
-    .stat-label {font-size:.9em; opacity:.9; text-transform:uppercase; letter-spacing:1px;}
     .charts-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+        grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
         justify-content: center;
         gap: 30px;
         margin-bottom: 30px;
@@ -67,7 +46,7 @@
         box-shadow:0 10px 25px rgba(0,0,0,.08);
         transition:.3s;
         width: 100%;
-        max-width: 500px;
+        max-width: 600px;
     }
     .chart-container:hover {transform:translateY(-2px);}
     .chart-title {
@@ -77,61 +56,46 @@
         margin-bottom:20px;
         text-align:center;
     }
-    .tooltip {
-        position:absolute;
-        background:rgba(0,0,0,.8);
-        color:#fff;
-        padding:10px;
-        border-radius:8px;
-        font-size:12px;
-        pointer-events:none;
-        opacity:0;
-        transition:opacity .3s;
-        z-index:1000;
+    svg {
+        display: block;
+        margin: auto;
+        background: lightgrey;
+        border-radius: 8px;
     }
-    .axis {font-size:12px;}
-    .bar {transition:.3s;}
-    .bar:hover {opacity:.7;}
-    .line {fill:none; stroke-width:3; stroke:#667eea;}
-    .dot {fill:#667eea; stroke:white; stroke-width:2;}
-    .arc {transition:.3s;}
-    .arc:hover {opacity:.8;}
 </style>
 </head>
 <body>
 <div class="dashboard">
     <div class="header">
-        <h1>📊 Damaris Yuselin Dzul UC</h1>
+        <h1>📊 Damaris Yuselin Dzul Uc</h1>
         <p>Visualización de datos con D3.js</p>
     </div>
-    <div class="stats-grid" id="stats"></div>
     <div class="charts-grid">
         <div class="chart-container">
             <div class="chart-title">🎯 Drag & Drop</div>
-            <svg id="dragdrop" width="100%" height="200" style="background:lightgrey;border-radius:8px"></svg>
+            <svg id="dragdrop" width="600" height="250"></svg>
         </div>
         <div class="chart-container">
             <div class="chart-title">🌀 Curva de Lissajous</div>
-            <svg id="lissajous" width="100%" height="300" style="background:lightgrey;border-radius:8px"></svg>
+            <svg id="lissajous" width="600" height="300"></svg>
         </div>
         <div class="chart-container">
             <div class="chart-title">📍 Coordenadas del Mouse</div>
-            <svg id="coords" width="100%" height="300" style="background:lightgrey;border-radius:8px;cursor:crosshair"></svg>
+            <svg id="coords" width="600" height="300" style="cursor:crosshair"></svg>
         </div>
         <div class="chart-container">
             <div class="chart-title">📊 Barras Stagger</div>
-            <svg id="stagger" width="100%" height="300" style="background:lightgrey;border-radius:8px"></svg>
+            <svg id="stagger" width="600" height="300"></svg>
         </div>
     </div>
 </div>
-<div class="tooltip" id="tooltip"></div>
 <script>
 // === Drag & Drop ===
 function makeDragDrop() {
   const svg = d3.select("#dragdrop");
-  svg.append("circle").attr("cx",100).attr("cy",100).attr("r",20).attr("fill","red");
-  svg.append("circle").attr("cx",300).attr("cy",100).attr("r",20).attr("fill","green");
-  svg.append("circle").attr("cx",500).attr("cy",100).attr("r",20).attr("fill","blue");
+  svg.append("circle").attr("cx",150).attr("cy",125).attr("r",20).attr("fill","red");
+  svg.append("circle").attr("cx",300).attr("cy",125).attr("r",20).attr("fill","green");
+  svg.append("circle").attr("cx",450).attr("cy",125).attr("r",20).attr("fill","blue");
   let widget, color;
   const drag = d3.drag()
     .on("start", function() {
@@ -154,11 +118,11 @@ function makeLissajous() {
   const svg = d3.select("#lissajous");
   let a = 1.9, b = 3.2;
   let phi, omega = 2*Math.PI/10000;
-  let crrX = 250, crrY = 150;
+  let crrX = 300, crrY = 150;
   let prvX = crrX, prvY = crrY;
   const timer = d3.timer(t => {
     phi = omega * t;
-    crrX = 150 + 100 * Math.cos(a * phi);
+    crrX = 300 + 100 * Math.cos(a * phi);
     crrY = 150 + 100 * Math.sin(b * phi);
     svg.selectAll("line")
       .each(function() { this.bogus_opacity *= .99 })
