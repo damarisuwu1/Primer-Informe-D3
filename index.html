@@ -27,9 +27,9 @@
         color:#2c3e50;
     }
     .header h1 {
-        font-size:2.5em;
+        font-size:2.8em;
         font-weight:300;
-        margin-bottom:10px;
+        margin-bottom:20px;
         background:linear-gradient(45deg,#667eea,#764ba2);
         -webkit-background-clip:text;
         -webkit-text-fill-color:transparent;
@@ -43,30 +43,39 @@
         margin-bottom: 30px;
     }
     .chart-container {
-        background:#f3f3f3;
+        background:linear-gradient(145deg, #f8f9fa, #e9ecef);
         border-radius:15px;
         padding:25px;
         box-shadow:0 10px 25px rgba(0,0,0,.08);
-        transition:.3s;
+        transition:all .3s ease;
         width: 100%;
         max-width: 640px;
+        border: 1px solid rgba(102, 126, 234, 0.1);
     }
-    .chart-container:hover {transform:translateY(-2px);}
+    .chart-container:hover {
+        transform:translateY(-5px);
+        box-shadow:0 15px 35px rgba(0,0,0,.15);
+    }
     .chart-title {
-        font-size:1.3em;
+        font-size:1.4em;
         font-weight:600;
         color:#2c3e50;
         margin-bottom:20px;
         text-align:center;
+        background:linear-gradient(45deg,#667eea,#764ba2);
+        -webkit-background-clip:text;
+        -webkit-text-fill-color:transparent;
+        background-clip:text;
     }
     svg {
         display: block;
         margin: auto;
-        background: #dcdcdc;
+        background: #ffffff;
         border-radius: 8px;
         width: 100%;
         height: auto;
         max-height: 320px;
+        box-shadow: inset 0 2px 8px rgba(0,0,0,.05);
     }
     .dual-svg {
         display:flex;
@@ -74,13 +83,15 @@
         gap:20px;
         flex-wrap:wrap;
     }
+    .dual-svg svg {
+        box-shadow: inset 0 2px 8px rgba(0,0,0,.05);
+    }
 </style>
 </head>
 <body>
 <div class="dashboard">
     <div class="header">
         <h1>📊 Damaris Yuselin Dzul UC</h1>
-        <p>Visualización de datos con D3.js</p>
     </div>
     <div class="charts-grid">
         <div class="chart-container">
@@ -113,14 +124,14 @@
 // === Drag & Drop ===
 function makeDragDrop() {
   const svg = d3.select("#dragdrop");
-  svg.append("circle").attr("cx",150).attr("cy",125).attr("r",20).attr("fill","red");
-  svg.append("circle").attr("cx",300).attr("cy",125).attr("r",20).attr("fill","green");
-  svg.append("circle").attr("cx",450).attr("cy",125).attr("r",20).attr("fill","blue");
+  svg.append("circle").attr("cx",150).attr("cy",125).attr("r",20).attr("fill","#ff6b6b");
+  svg.append("circle").attr("cx",300).attr("cy",125).attr("r",20).attr("fill","#4ecdc4");
+  svg.append("circle").attr("cx",450).attr("cy",125).attr("r",20).attr("fill","#45b7d1");
   let widget, color;
   const drag = d3.drag()
     .on("start", function() {
       color = d3.select(this).attr("fill");
-      widget = d3.select(this).attr("fill", "lime");
+      widget = d3.select(this).attr("fill", "#667eea");
     })
     .on("drag", function(event) {
       const [x, y] = d3.pointer(event, svg.node());
@@ -152,7 +163,7 @@ function makeLissajous() {
       .each(function() { this.bogus_opacity = 1.0 })
       .attr("x1", prvX).attr("y1", prvY)
       .attr("x2", crrX).attr("y2", crrY)
-      .attr("stroke", "green").attr("stroke-width", 2);
+      .attr("stroke", "#667eea").attr("stroke-width", 2);
     prvX = crrX; prvY = crrY;
     if(t > 120e3) timer.stop();
   });
@@ -161,7 +172,7 @@ function makeLissajous() {
 // === Coordenadas del Mouse ===
 function coordsPixels(selector) {
   const svg = d3.select(selector);
-  const txt = svg.append("text").attr("fill", "black").attr("font-size", "14px");
+  const txt = svg.append("text").attr("fill", "#2c3e50").attr("font-size", "14px").attr("font-weight", "600");
   svg.on("mousemove", function(event) {
     const [x, y] = d3.pointer(event, svg.node());
     txt.attr("x", x + 18).attr("y", y + 6).text(`${Math.round(x)}, ${Math.round(y)}`);
@@ -177,7 +188,7 @@ function makeStagger() {
   const scX = d3.scaleLinear().domain([0, n]).range([50, 540]);
   const scY = d3.scaleLinear().domain([0, mx]).range([250, 50]);
   svg.selectAll("line").data(ds1).enter().append("line")
-    .attr("stroke", "red").attr("stroke-width", 20)
+    .attr("stroke", "#764ba2").attr("stroke-width", 20)
     .attr("x1", (d,i) => scX(i)).attr("y1", scY(0))
     .attr("x2", (d,i) => scX(i)).attr("y2", d => scY(d));
   svg.on("click", function() {
@@ -190,20 +201,25 @@ function makeStagger() {
 
 // === Brush Scatter ===
 function makeBrushScatter() {
-  d3.csv("data/dense.csv").then(data => {
-    data.forEach(d => { d.A = +d.A; d.B = +d.B; });
+  // Generar datos simulados ya que no tenemos el archivo CSV
+  const data = [];
+  for(let i = 0; i < 200; i++) {
+    data.push({
+      A: Math.random() * 290 + 5,
+      B: Math.random() * 290 + 5
+    });
+  }
 
-    const svg1 = d3.select("#brush1"),
-          svg2 = d3.select("#brush2");
+  const svg1 = d3.select("#brush1"),
+        svg2 = d3.select("#brush2");
 
-    const sc1 = d3.scaleLinear().domain([0, 10, 50]).range(["lime", "yellow", "red"]);
-    const sc2 = d3.scaleLinear().domain([0, 10, 50]).range(["lime", "yellow", "blue"]);
+  const sc1 = d3.scaleLinear().domain([0, 30, 100]).range(["#4ecdc4", "#ffe66d", "#ff6b6b"]);
+  const sc2 = d3.scaleLinear().domain([0, 30, 100]).range(["#4ecdc4", "#ffe66d", "#667eea"]);
 
-    const cs1 = drawCircles(svg1, data, d => d.A, d => d.B, sc1);
-    const cs2 = drawCircles(svg2, data, d => d.A, d => d.B, sc2);
+  const cs1 = drawCircles(svg1, data, d => d.A, d => d.B, sc1);
+  const cs2 = drawCircles(svg2, data, d => d.A, d => d.B, sc2);
 
-    installHandlers(svg1, data, cs1, cs2, sc1, sc2);
-  });
+  installHandlers(svg1, data, cs1, cs2, sc1, sc2);
 
   function drawCircles(svg, data, accX, accY, sc) {
     const color = sc(Infinity);
@@ -215,7 +231,7 @@ function makeBrushScatter() {
       .attr("cx", accX)
       .attr("cy", accY)
       .attr("fill", color)
-      .attr("fill-opacity", 0.4);
+      .attr("fill-opacity", 0.6);
   }
 
   function installHandlers(svg, data, cs1, cs2, sc1, sc2) {
