@@ -16,13 +16,16 @@
     .dashboard {
         max-width:1400px;
         margin:auto;
-        background:rgba(255,255,255,.95);
+        background:#ffffff;
         border-radius:20px;
         padding:30px;
         box-shadow:0 20px 40px rgba(0,0,0,.1);
-        backdrop-filter:blur(10px);
     }
-    .header {text-align:center; margin-bottom:40px; color:#2c3e50}
+    .header {
+        text-align:center;
+        margin-bottom:40px;
+        color:#2c3e50;
+    }
     .header h1 {
         font-size:2.5em;
         font-weight:300;
@@ -34,19 +37,19 @@
     }
     .charts-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+        grid-template-columns: repeat(auto-fit, minmax(420px, 1fr));
         justify-content: center;
         gap: 30px;
         margin-bottom: 30px;
     }
     .chart-container {
-        background:#fff;
+        background:#f3f3f3;
         border-radius:15px;
         padding:25px;
         box-shadow:0 10px 25px rgba(0,0,0,.08);
         transition:.3s;
         width: 100%;
-        max-width: 600px;
+        max-width: 640px;
     }
     .chart-container:hover {transform:translateY(-2px);}
     .chart-title {
@@ -59,33 +62,36 @@
     svg {
         display: block;
         margin: auto;
-        background: lightgrey;
+        background: #dcdcdc;
         border-radius: 8px;
+        width: 100%;
+        height: auto;
+        max-height: 320px;
     }
 </style>
 </head>
 <body>
 <div class="dashboard">
     <div class="header">
-        <h1>📊 Damaris Yuselin Dzul Uc</h1>
+        <h1>📊 Damaris Yuselin Dzul UC</h1>
         <p>Visualización de datos con D3.js</p>
     </div>
     <div class="charts-grid">
         <div class="chart-container">
             <div class="chart-title">🎯 Drag & Drop</div>
-            <svg id="dragdrop" width="600" height="250"></svg>
+            <svg id="dragdrop" viewBox="0 0 600 250"></svg>
         </div>
         <div class="chart-container">
             <div class="chart-title">🌀 Curva de Lissajous</div>
-            <svg id="lissajous" width="600" height="300"></svg>
+            <svg id="lissajous" viewBox="0 0 600 300"></svg>
         </div>
         <div class="chart-container">
             <div class="chart-title">📍 Coordenadas del Mouse</div>
-            <svg id="coords" width="600" height="300" style="cursor:crosshair"></svg>
+            <svg id="coords" viewBox="0 0 600 300" style="cursor:crosshair"></svg>
         </div>
         <div class="chart-container">
             <div class="chart-title">📊 Barras Stagger</div>
-            <svg id="stagger" width="600" height="300"></svg>
+            <svg id="stagger" viewBox="0 0 600 300"></svg>
         </div>
     </div>
 </div>
