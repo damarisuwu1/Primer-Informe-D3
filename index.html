@@ -126,8 +126,91 @@
 </div>
 <div class="tooltip" id="tooltip"></div>
 <script>
-// Aquí puedes integrar las funciones de D3 para cada uno de los 4 gráficos personalizados
+// === Drag & Drop ===
+function makeDragDrop() {
+  const svg = d3.select("#dragdrop");
+  svg.append("circle").attr("cx",100).attr("cy",100).attr("r",20).attr("fill","red");
+  svg.append("circle").attr("cx",300).attr("cy",100).attr("r",20).attr("fill","green");
+  svg.append("circle").attr("cx",500).attr("cy",100).attr("r",20).attr("fill","blue");
+  let widget, color;
+  const drag = d3.drag()
+    .on("start", function() {
+      color = d3.select(this).attr("fill");
+      widget = d3.select(this).attr("fill", "lime");
+    })
+    .on("drag", function(event) {
+      const [x, y] = d3.pointer(event, svg.node());
+      widget.attr("cx", x).attr("cy", y);
+    })
+    .on("end", function() {
+      widget.attr("fill", color);
+      widget = undefined;
+    });
+  drag(svg.selectAll("circle"));
+}
+
+// === Lissajous Curve ===
+function makeLissajous() {
+  const svg = d3.select("#lissajous");
+  let a = 1.9, b = 3.2;
+  let phi, omega = 2*Math.PI/10000;
+  let crrX = 250, crrY = 150;
+  let prvX = crrX, prvY = crrY;
+  const timer = d3.timer(t => {
+    phi = omega * t;
+    crrX = 150 + 100 * Math.cos(a * phi);
+    crrY = 150 + 100 * Math.sin(b * phi);
+    svg.selectAll("line")
+      .each(function() { this.bogus_opacity *= .99 })
+      .attr("stroke-opacity", function() { return this.bogus_opacity })
+      .filter(function() { return this.bogus_opacity < 0.05 }).remove();
+    svg.append("line")
+      .each(function() { this.bogus_opacity = 1.0 })
+      .attr("x1", prvX).attr("y1", prvY)
+      .attr("x2", crrX).attr("y2", crrY)
+      .attr("stroke", "green").attr("stroke-width", 2);
+    prvX = crrX; prvY = crrY;
+    if(t > 120e3) timer.stop();
+  });
+}
+
+// === Coordenadas del Mouse ===
+function coordsPixels(selector) {
+  const svg = d3.select(selector);
+  const txt = svg.append("text").attr("fill", "black").attr("font-size", "14px");
+  svg.on("mousemove", function(event) {
+    const [x, y] = d3.pointer(event, svg.node());
+    txt.attr("x", x + 18).attr("y", y + 6).text(`${Math.round(x)}, ${Math.round(y)}`);
+  });
+}
+
+// === Stagger Chart ===
+function makeStagger() {
+  let ds1 = [2,1,3,5,7,8,9,9,9,8,7,5,3,1,2],
+      ds2 = [8,9,8,7,5,3,2,1,2,3,5,7,8,9,8];
+  const n = ds1.length, mx = d3.max(ds1.concat(ds2));
+  const svg = d3.select("#stagger");
+  const scX = d3.scaleLinear().domain([0, n]).range([50, 540]);
+  const scY = d3.scaleLinear().domain([0, mx]).range([250, 50]);
+  svg.selectAll("line").data(ds1).enter().append("line")
+    .attr("stroke", "red").attr("stroke-width", 20)
+    .attr("x1", (d,i) => scX(i)).attr("y1", scY(0))
+    .attr("x2", (d,i) => scX(i)).attr("y2", d => scY(d));
+  svg.on("click", function() {
+    [ds1, ds2] = [ds2, ds1];
+    svg.selectAll("line").data(ds1)
+      .transition().duration(1000).delay((d,i) => 200 * i)
+      .attr("y2", d => scY(d));
+  });
+}
+
+// === Lanzar funciones al cargar ===
+document.addEventListener("DOMContentLoaded", function() {
+  makeDragDrop();
+  makeLissajous();
+  coordsPixels("#coords");
+  makeStagger();
+});
 </script>
 </body>
 </html>
-
