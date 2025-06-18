@@ -60,17 +60,20 @@
 
     .charts-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
-      gap: 40px;
+      grid-template-columns: repeat(auto-fit, minmax(520px, 1fr));
+      gap: 30px;
     }
 
     .chart-container {
       background: white;
       border-radius: 20px;
-      padding: 30px;
+      padding: 25px;
       border: 2px solid rgba(255, 255, 255, 0.6);
       box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
       transition: transform 0.3s;
+      min-height: 400px;
+      display: flex;
+      flex-direction: column;
     }
 
     .chart-container:hover {
@@ -83,28 +86,44 @@
       margin-bottom: 20px;
       text-align: center;
       color: var(--texto);
+      flex-shrink: 0;
+    }
+
+    .chart-content {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
 
     svg {
-      display: block;
-      margin: auto;
-      background: #ffffff;
       border-radius: 12px;
-      width: 100%;
-      max-height: 380px;
       box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.04);
       border: 1px solid #e3e3e3;
+      background: #ffffff;
+    }
+
+    .single-svg {
+      width: 100%;
+      height: 320px;
     }
 
     .dual-svg {
       display: flex;
-      justify-content: center;
-      gap: 25px;
-      flex-wrap: wrap;
+      justify-content: space-between;
+      gap: 15px;
+      width: 100%;
+      height: 320px;
     }
 
     .dual-svg svg {
-      border: 1px solid #e3e3e3;
+      width: 48%;
+      height: 100%;
+    }
+
+    .brush-container {
+      width: 100%;
+      height: 100%;
     }
   </style>
 </head>
@@ -117,155 +136,216 @@
     <div class="charts-grid">
       <div class="chart-container">
         <div class="chart-title">🎯 Drag & Drop</div>
-        <svg id="dragdrop" viewBox="0 0 650 280"></svg>
+        <div class="chart-content">
+          <svg id="dragdrop" class="single-svg" viewBox="0 0 500 300"></svg>
+        </div>
       </div>
       <div class="chart-container">
         <div class="chart-title">🌀 Curva de Lissajous</div>
-        <svg id="lissajous" viewBox="0 0 650 330"></svg>
+        <div class="chart-content">
+          <svg id="lissajous" class="single-svg" viewBox="0 0 500 300"></svg>
+        </div>
       </div>
       <div class="chart-container">
         <div class="chart-title">📍 Coordenadas del Mouse</div>
-        <svg id="coords" viewBox="0 0 650 330" style="cursor:crosshair"></svg>
+        <div class="chart-content">
+          <svg id="coords" class="single-svg" viewBox="0 0 500 300" style="cursor:crosshair"></svg>
+        </div>
       </div>
       <div class="chart-container">
         <div class="chart-title">📊 Barras Stagger</div>
-        <svg id="stagger" viewBox="0 0 650 330"></svg>
+        <div class="chart-content">
+          <svg id="stagger" class="single-svg" viewBox="0 0 500 300"></svg>
+        </div>
       </div>
       <div class="chart-container">
         <div class="chart-title">🔍 Brush Scatter</div>
-        <div class="dual-svg">
-          <svg id="brush1" width="320" height="320"></svg>
-          <svg id="brush2" width="320" height="320"></svg>
+        <div class="chart-content brush-container">
+          <div class="dual-svg">
+            <svg id="brush1"></svg>
+            <svg id="brush2"></svg>
+          </div>
         </div>
       </div>
     </div>
   </div>
 
 <script>
-// Drag & Drop
+// Drag & Drop - Corregido con mejor espaciado
 function makeDragDrop() {
   const svg = d3.select("#dragdrop");
   const colors = ["#00c9a7", "#ff6f61", "#8c9eff"];
-  [162, 325, 488].forEach((x, i) =>
-    svg.append("circle").attr("cx", x).attr("cy", 140).attr("r", 20).attr("fill", colors[i])
-  );
-  let widget, color;
+  const positions = [125, 250, 375]; // Mejor distribución horizontal
+  
+  positions.forEach((x, i) => {
+    svg.append("circle")
+      .attr("cx", x)
+      .attr("cy", 150) // Centrado verticalmente
+      .attr("r", 25) // Radio un poco mayor
+      .attr("fill", colors[i])
+      .attr("stroke", "#fff")
+      .attr("stroke-width", 3)
+      .style("cursor", "grab");
+  });
+
+  let widget, originalColor;
   const drag = d3.drag()
     .on("start", function () {
-      color = d3.select(this).attr("fill");
-      widget = d3.select(this).attr("fill", "#6c63ff");
+      originalColor = d3.select(this).attr("fill");
+      widget = d3.select(this)
+        .attr("fill", "#6c63ff")
+        .style("cursor", "grabbing")
+        .raise(); // Traer al frente
     })
     .on("drag", function (event) {
       const [x, y] = d3.pointer(event, svg.node());
-      widget.attr("cx", x).attr("cy", y);
+      // Limitar el movimiento dentro del SVG con margen
+      const clampedX = Math.max(25, Math.min(475, x));
+      const clampedY = Math.max(25, Math.min(275, y));
+      widget.attr("cx", clampedX).attr("cy", clampedY);
     })
     .on("end", function () {
-      widget.attr("fill", color);
+      widget
+        .attr("fill", originalColor)
+        .style("cursor", "grab");
       widget = undefined;
     });
-  drag(svg.selectAll("circle"));
+
+  svg.selectAll("circle").call(drag);
 }
 
-// Lissajous
+// Lissajous - Ajustado para nuevo viewBox
 function makeLissajous() {
   const svg = d3.select("#lissajous");
   let a = 1.9, b = 3.2;
   let phi, omega = 2 * Math.PI / 10000;
-  let crrX = 325, crrY = 165, prvX = crrX, prvY = crrY;
+  let crrX = 250, crrY = 150, prvX = crrX, prvY = crrY; // Centrado en nuevo viewBox
+  
   const timer = d3.timer(t => {
     phi = omega * t;
-    crrX = 325 + 110 * Math.cos(a * phi);
-    crrY = 165 + 110 * Math.sin(b * phi);
+    crrX = 250 + 100 * Math.cos(a * phi); // Ajustado para 500px de ancho
+    crrY = 150 + 100 * Math.sin(b * phi); // Ajustado para 300px de alto
+    
     svg.selectAll("line")
       .each(function () { this.bogus_opacity *= .99 })
       .attr("stroke-opacity", function () { return this.bogus_opacity })
       .filter(function () { return this.bogus_opacity < 0.05 }).remove();
+    
     svg.append("line")
       .each(function () { this.bogus_opacity = 1.0 })
       .attr("x1", prvX).attr("y1", prvY)
       .attr("x2", crrX).attr("y2", crrY)
-      .attr("stroke", "#6c63ff").attr("stroke-width", 2);
-    prvX = crrX; prvY = crrY;
+      .attr("stroke", "#6c63ff")
+      .attr("stroke-width", 2);
+    
+    prvX = crrX; 
+    prvY = crrY;
+    
     if (t > 120e3) timer.stop();
   });
 }
 
-// Coordenadas
+// Coordenadas - Ajustado
 function coordsPixels(selector) {
   const svg = d3.select(selector);
-  const txt = svg.append("text").attr("fill", "#333").attr("font-size", "14px").attr("font-weight", "600");
+  const txt = svg.append("text")
+    .attr("fill", "#333")
+    .attr("font-size", "16px")
+    .attr("font-weight", "600")
+    .attr("font-family", "monospace");
+  
   svg.on("mousemove", function (event) {
     const [x, y] = d3.pointer(event, svg.node());
-    txt.attr("x", x + 18).attr("y", y + 6).text(`${Math.round(x)}, ${Math.round(y)}`);
+    txt.attr("x", Math.min(x + 10, 420))
+       .attr("y", Math.max(y - 10, 20))
+       .text(`${Math.round(x)}, ${Math.round(y)}`);
   });
 }
 
-// Barras Stagger
+// Barras Stagger - Ajustado para nuevo viewBox
 function makeStagger() {
   let ds1 = [2,1,3,5,7,8,9,9,9,8,7,5,3,1,2],
       ds2 = [8,9,8,7,5,3,2,1,2,3,5,7,8,9,8];
+  
   const svg = d3.select("#stagger");
   const n = ds1.length, mx = d3.max(ds1.concat(ds2));
-  const scX = d3.scaleLinear().domain([0, n]).range([55, 580]);
-  const scY = d3.scaleLinear().domain([0, mx]).range([280, 55]);
+  const scX = d3.scaleLinear().domain([0, n]).range([40, 460]); // Ajustado
+  const scY = d3.scaleLinear().domain([0, mx]).range([260, 40]); // Ajustado
+  
   svg.selectAll("line").data(ds1).enter().append("line")
-    .attr("stroke", "#ff6f61").attr("stroke-width", 20)
-    .attr("x1", (d,i) => scX(i)).attr("y1", scY(0))
-    .attr("x2", (d,i) => scX(i)).attr("y2", d => scY(d));
+    .attr("stroke", "#ff6f61")
+    .attr("stroke-width", 18)
+    .attr("stroke-linecap", "round")
+    .attr("x1", (d,i) => scX(i))
+    .attr("y1", scY(0))
+    .attr("x2", (d,i) => scX(i))
+    .attr("y2", d => scY(d));
+  
   svg.on("click", function() {
     [ds1, ds2] = [ds2, ds1];
     svg.selectAll("line").data(ds1)
-      .transition().duration(1000).delay((d,i) => 200 * i)
+      .transition()
+      .duration(1000)
+      .delay((d,i) => 200 * i)
       .attr("y2", d => scY(d));
   });
 }
 
-// Brush Scatter
+// Brush Scatter - Completamente rediseñado
 function makeBrushScatter() {
-  const data = Array.from({ length: 200 }, () => ({
-    A: Math.random() * 310 + 5,
-    B: Math.random() * 310 + 5
+  const data = Array.from({ length: 150 }, () => ({
+    A: Math.random() * 200 + 20, // Rango ajustado para el SVG
+    B: Math.random() * 240 + 20
   }));
 
-  const svg1 = d3.select("#brush1"),
-        svg2 = d3.select("#brush2");
+  const svg1 = d3.select("#brush1");
+  const svg2 = d3.select("#brush2");
+  
+  // Obtener dimensiones reales de los SVGs
+  const rect1 = svg1.node().getBoundingClientRect();
+  const rect2 = svg2.node().getBoundingClientRect();
+  
+  svg1.attr("viewBox", `0 0 240 280`);
+  svg2.attr("viewBox", `0 0 240 280`);
 
-  const sc1 = d3.scaleLinear().domain([0, 30, 100]).range(["#00c9a7", "#f7b267", "#f25f5c"]);
-  const sc2 = d3.scaleLinear().domain([0, 30, 100]).range(["#a0ced9", "#f7b267", "#6c63ff"]);
+  const sc1 = d3.scaleLinear().domain([0, 40, 120]).range(["#00c9a7", "#f7b267", "#f25f5c"]);
+  const sc2 = d3.scaleLinear().domain([0, 40, 120]).range(["#a0ced9", "#f7b267", "#6c63ff"]);
 
-  const cs1 = draw(svg1, data, sc1);
-  const cs2 = draw(svg2, data, sc2);
+  const cs1 = drawScatter(svg1, data, sc1);
+  const cs2 = drawScatter(svg2, data, sc2);
 
-  svg1.attr("cursor", "crosshair")
+  svg1.style("cursor", "crosshair")
     .on("mousemove", function(event) {
-      const [x, y] = d3.pointer(event);
-      data.forEach((d, i) => {
+      const [x, y] = d3.pointer(event, svg1.node());
+      data.forEach((d) => {
         const dx = x - d.A;
         const dy = y - d.B;
-        const r = Math.hypot(dx, dy);
+        const r = Math.sqrt(dx * dx + dy * dy);
         d.r = r;
       });
       cs1.attr("fill", d => sc1(d.r));
       cs2.attr("fill", d => sc2(d.r));
     })
     .on("mouseleave", () => {
+      data.forEach(d => d.r = Infinity);
       cs1.attr("fill", sc1(Infinity));
       cs2.attr("fill", sc2(Infinity));
     });
 
-  function draw(svg, data, scale) {
+  function drawScatter(svg, data, scale) {
     return svg.selectAll("circle")
       .data(data)
       .enter()
       .append("circle")
-      .attr("r", 5)
+      .attr("r", 4)
       .attr("cx", d => d.A)
       .attr("cy", d => d.B)
       .attr("fill", scale(Infinity))
-      .attr("fill-opacity", 0.6);
+      .attr("fill-opacity", 0.7)
+      .attr("stroke", "#fff")
+      .attr("stroke-width", 0.5);
   }
 }
-
 
 // Cargar funciones
 document.addEventListener("DOMContentLoaded", function () {
