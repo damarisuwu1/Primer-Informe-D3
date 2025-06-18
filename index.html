@@ -175,13 +175,13 @@
 function makeDragDrop() {
   const svg = d3.select("#dragdrop");
   const colors = ["#00c9a7", "#ff6f61", "#8c9eff"];
-  const positions = [125, 250, 375]; // Mejor distribución horizontal
-  
+  const positions = [125, 250, 375];
+
   positions.forEach((x, i) => {
     svg.append("circle")
       .attr("cx", x)
-      .attr("cy", 150) // Centrado verticalmente
-      .attr("r", 25) // Radio un poco mayor
+      .attr("cy", 150)
+      .attr("r", 25)
       .attr("fill", colors[i])
       .attr("stroke", "#fff")
       .attr("stroke-width", 3)
@@ -189,19 +189,25 @@ function makeDragDrop() {
   });
 
   let widget, originalColor;
+
   const drag = d3.drag()
     .on("start", function () {
       originalColor = d3.select(this).attr("fill");
       widget = d3.select(this)
         .attr("fill", "#6c63ff")
         .style("cursor", "grabbing")
-        .raise(); // Traer al frente
+        .raise();
     })
     .on("drag", function (event) {
-      const [x, y] = d3.pointer(event, svg.node());
-      // Limitar el movimiento dentro del SVG con margen
-      const clampedX = Math.max(25, Math.min(475, x));
-      const clampedY = Math.max(25, Math.min(275, y));
+      const svgNode = svg.node();
+      const pt = svgNode.createSVGPoint();
+      pt.x = event.sourceEvent.clientX;
+      pt.y = event.sourceEvent.clientY;
+      const svgP = pt.matrixTransform(svgNode.getScreenCTM().inverse());
+
+      const clampedX = Math.max(25, Math.min(475, svgP.x));
+      const clampedY = Math.max(25, Math.min(275, svgP.y));
+
       widget.attr("cx", clampedX).attr("cy", clampedY);
     })
     .on("end", function () {
